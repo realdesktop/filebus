@@ -9,10 +9,16 @@
 #include "ixp_local.h"
 
 
-void (*register_fd)(IxpConn*);
-void (*unregister_fd)(IxpConn*);
+static void (*register_fd)(IxpConn*);
+static void (*unregister_fd)(IxpConn*);
 
 static void handlereq(Ixp9Req *r);
+
+void ixp_set_fd_callbacks(void (*register_fd_cb)(IxpConn*), void (*unregister_fd_cb)(IxpConn*)) {
+
+    register_fd = register_fd_cb;
+    unregister_fd = unregister_fd_cb;
+}
 
 /**
  * Variable: ixp_printfcall
@@ -579,7 +585,7 @@ cleanupconn(IxpConn *c) {
  *	F<IxpFcall>, F<IxpFid>
  */
 void
-ixp_serve9conn(IxpConn *c) {
+rbus_ixp_serve9conn(IxpConn *c) {
 	Ixp9Conn *p9conn;
 	int fd;
 
