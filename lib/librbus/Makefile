@@ -6,6 +6,7 @@ TARG =	librbus
 
 OBJ =	fs   \
 	libixp_request \
+	rbus_common \
 
 include $(ROOT)/mk/lib.mk
 
