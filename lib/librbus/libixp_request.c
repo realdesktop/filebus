@@ -9,8 +9,8 @@
 #include "ixp_local.h"
 
 
-extern void register_fd(IxpConn*);
-extern void unregister_fd(IxpConn*);
+void (*register_fd)(IxpConn*);
+void (*unregister_fd)(IxpConn*);
 
 static void handlereq(Ixp9Req *r);
 

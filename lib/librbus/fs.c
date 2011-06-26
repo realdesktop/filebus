@@ -29,7 +29,7 @@ typedef int64_t		vlong;
 
 char    buffer[8092];
 
-extern struct rbus_root* RbusRoot;
+struct rbus_root* RbusRoot;
 
 
 void
