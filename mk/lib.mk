@@ -4,7 +4,7 @@ OFILES = $(OBJ:=.o)
 
 all: $(HFILES) $(LIB)
 
-install: $(PTARG).install
+install: $(PTARG).install $(PTARG).so.install
 uninstall: $(PTARG).uninstall
 clean: libclean
 depend: $(OBJ:=.depend)

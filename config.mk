@@ -13,7 +13,7 @@ PREFIX = /usr/local
 
 # Includes and libs
 INCLUDES = -I. -I$(ROOT)/include -I$(INCLUDE) -I/usr/include
-LIBS = -L/usr/lib -lc
+LIBS = -L/usr/lib -lc -lixp
 
 # Flags
 include $(ROOT)/mk/gcc.mk
@@ -22,7 +22,7 @@ LDFLAGS = -g $(LDLIBS) $(LIBS)
 
 # Compiler, Linker. Linker should usually *not* be ld.
 CC = cc -c
-LD = cc
+LD = cc -shared -fPIC
 # Archiver
 AR = ar crs
 #AR = sh -c 'ar cr "$$@" && ranlib "$$@"'
@@ -33,7 +33,7 @@ AR = ar crs
 #CFLAGS += -xtarget=ultra
 
 # Misc
-#MAKESO = 1
+MAKESO = 1
 
 # Extra Components
 IGNORE = \

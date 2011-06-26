@@ -113,7 +113,7 @@ UNINSTALL= _uninstall() { set -e; \
 	   }; _uninstall
 
 .out.install:
-	$(INSTALL) -b 0755 $< $(BIN) $*
+	$(INSTALL) -b 0755 $< $(LIBDIR) $*
 .out.uninstall:
 	$(UNINSTALL) $< $(BIN) $*
 
