@@ -9,12 +9,12 @@ extern struct rbus_root* RbusRoot;
 struct rbus_root * rbus_init(char *address) {
     struct rbus_root *priv;
 
-    priv = os_zalloc(sizeof(*priv));
+    priv = malloc(sizeof(*priv));
     if (priv == NULL)
             return NULL;
 
     // accept
-    IxpServer *srv = os_zalloc(sizeof(IxpServer));
+    IxpServer *srv = malloc(sizeof(IxpServer));
     int fd;
 
     fd = ixp_announce(address);
