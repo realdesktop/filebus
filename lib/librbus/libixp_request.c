@@ -540,8 +540,8 @@ cleanupconn(IxpConn *c) {
 	Ixp9Conn *p9conn;
 	Ixp9Req *req, *r;
 
-        // FIXME: zomg hack
-        unregister_fd(c);
+        if(unregister_fd)
+            unregister_fd(c);
 
 	p9conn = c->aux;
 	p9conn->conn = nil;
@@ -609,5 +609,6 @@ rbus_ixp_serve9conn(IxpConn *c) {
 
 	ixp_listen(c->srv, fd, p9conn, handlefcall, cleanupconn);
 
-        register_fd(c->srv->conn);
+        if(register_fd)
+            register_fd(c->srv->conn);
 }
