@@ -87,7 +87,7 @@ lookup_file(IxpFileId *parent, char *name)
 
             if(!name || !strcmp(name, "events")) {
                 push_file("events", 1, 0);
-                file->tab.perm = P9_OREAD;
+                file->tab.perm = 0400 | P9_OREAD;
                 file->tab.qtype = P9_QTFILE | P9_QTAPPEND;
                 file->tab.type = FsEvent;
 
@@ -106,7 +106,7 @@ lookup_file(IxpFileId *parent, char *name)
                             file->p.rbus = parent->p.rbus;
 
                             file->index = (int)prop;
-                            file->tab.perm = 0600;
+                            file->tab.perm = 0400;
                             file->tab.qtype = P9_QTFILE;
                             file->tab.type = FsProp;
 
