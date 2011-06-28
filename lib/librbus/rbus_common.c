@@ -8,14 +8,21 @@ extern struct rbus_root* RbusRoot;
 
 struct rbus_root * rbus_init(char *address) {
     struct rbus_root *priv;
+    int fd;
 
-    priv = malloc(sizeof(*priv));
+    priv = malloc(sizeof(struct rbus_root));
     if (priv == NULL)
             return NULL;
 
+
     // accept
     IxpServer *srv = malloc(sizeof(IxpServer));
-    int fd;
+    if (srv == NULL)
+            return NULL;
+
+    bzero(priv, sizeof(struct rbus_root));
+    bzero(srv, sizeof(IxpServer));
+
 
     fd = ixp_announce(address);
     if(fd < 0) {
@@ -25,6 +32,7 @@ struct rbus_root * rbus_init(char *address) {
     ixp_listen(srv, fd, &p9srv, rbus_ixp_serve9conn, NULL);
 
     priv->srv = srv;
+    priv->rbus.root = priv;
 
     RbusRoot = priv;
 
