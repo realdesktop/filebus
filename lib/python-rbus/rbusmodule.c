@@ -101,14 +101,60 @@ static PyGetSetDef RbusRoot_getseters[] = {
 
 static PyObject *
 RbusRoot_run(RbusRoot* self) {
-    ixp_serverloop(self->native->srv);
+    fd_set qfds;
+    IxpConn *c;
+    struct rbus_root *rbus = self->native;
+    struct timeval tv;
+
+    tv.tv_sec = 1; //FIXME
+    tv.tv_usec = 0;
+
+
+reset:
+
+    for(c = rbus->srv->conn; c; c = c->next) {
+        if(c->read) {
+            FD_SET(c->fd, &qfds);
+        }
+    }
+
+    if (select(FD_SETSIZE, &qfds, NULL, NULL, &tv) < 0) {
+            if (errno == EINTR)
+                goto reset;
+
+            goto out;
+    }
+
+    for(c = rbus->srv->conn; c; c = c->next) {
+        if(c->read && FD_ISSET(c->fd, &qfds)) {
+            c->read(c);
+        }
+    }
+
+out:
 
     Py_RETURN_NONE;
 };
 
+static PyObject *
+RbusRoot_put_event(RbusRoot* self, PyObject *event) {
+    char * str_event;
+    struct rbus_root *rbus = self->native;
+
+    str_event = PyString_AsString(event);
+
+    rbus_event(&rbus->rbus.events, "%s\n", str_event);
+
+    Py_RETURN_NONE;
+
+}
+
 static PyMethodDef RbusRoot_methods[] = {
     {"run", (PyCFunction)RbusRoot_run, METH_NOARGS,
         "Loop handling 9P proto"},
+    {"put_event", (PyCFunction)RbusRoot_put_event, METH_O,
+        "Put event in root event bus"},
+
     {NULL}  /* Sentinel */
 };
 
