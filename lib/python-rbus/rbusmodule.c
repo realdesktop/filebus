@@ -91,11 +91,71 @@ RbusRoot_setaddress(RbusRoot *self, PyObject *value, void *closure)
 
 }
 
+static PyObject *
+RbusRoot_getchildren(RbusRoot *self, void *closure) {
+    struct rbus_child *child = self->native->rbus.childs;
+
+    while (child) {
+        printf("children: %s %x, next %x\n", child->name,
+                child->rbus, child->next);
+        child = child->next;
+    }
+
+
+    Py_RETURN_NONE;
+
+}
+
+static int
+RbusRoot_setchildren(RbusRoot *self, PyObject *value, void *closure) {
+    Py_ssize_t i, size;
+    PyObject *item;
+    size = PyList_Size(value);
+
+    struct rbus_child *child, *prev = NULL;
+    struct rbus_root *rbus = self->native;
+
+    child = calloc(size+1, sizeof(struct rbus_child));
+    rbus->rbus.childs = child;
+
+    /* *
+     *      TODO: drop old list if any
+     * */
+
+    for(i=0; i<size; i++) {
+        item = PyList_GetItem(value, i);
+
+        if(! PyString_CheckExact(item)) {
+            continue; //throw exc?
+        }
+
+        strcpy(child->name, PyString_AsString(item));
+
+        if(prev)
+            prev->next = child;
+
+        prev = child;
+
+        child++;
+
+    }
+
+
+    return 0;
+}
+
+
 static PyGetSetDef RbusRoot_getseters[] = {
     {"address", 
      (getter)RbusRoot_getaddress, (setter)RbusRoot_setaddress,
-     "first name",
+     "dial string",
      NULL},
+
+    {"children_types",
+     (getter)RbusRoot_getchildren, (setter)RbusRoot_setchildren,
+     "child object types",
+     NULL},
+
     {NULL}  /* Sentinel */
 };
 
@@ -149,12 +209,64 @@ RbusRoot_put_event(RbusRoot* self, PyObject *event) {
 
 }
 
+static PyObject *
+RbusRoot_append_child(RbusRoot* self, PyObject *pychild) {
+    PyObject *type = PyObject_GenericGetAttr(pychild, PyString_FromString("RBUS_TYPE"));
+    PyObject *name = PyObject_GenericGetAttr(pychild, PyString_FromString("__name__"));
+
+    struct rbus_t *rbus = &self->native->rbus;
+    struct rbus_child *child;
+
+    if(name == NULL)
+        goto out;
+
+    if(type == NULL)
+        goto out;
+
+    char *strname = PyString_AsString(name);
+    char *strtype = PyString_AsString(type);
+
+    if(! rbus->childs )
+        goto out;
+
+    for(child = rbus->childs; child; child = child->next) {
+        if(! child->name)
+            continue;
+
+        if(!strcmp(child->name, strtype))
+
+            goto found;
+    }
+
+out:
+    Py_RETURN_NONE;
+
+found:
+
+    while (child->next)
+        child = child->next;
+
+    child->next = calloc(1, sizeof(struct rbus_child));
+
+    struct rbus_t *priv = calloc(1, sizeof(struct rbus_t));
+
+    child = child->next;
+    strcpy(child->name, strtype);
+    strcpy(priv->name, strname);
+    child->rbus = priv;
+    child->rbus->native = pychild;
+
+    goto out;
+
+}
+
 static PyMethodDef RbusRoot_methods[] = {
     {"run", (PyCFunction)RbusRoot_run, METH_NOARGS,
         "Loop handling 9P proto"},
     {"put_event", (PyCFunction)RbusRoot_put_event, METH_O,
         "Put event in root event bus"},
-
+    {"append_child", (PyCFunction)RbusRoot_append_child, METH_O,
+        "Add child object"},
     {NULL}  /* Sentinel */
 };
 
