@@ -1,0 +1,180 @@
+#include <Python.h>
+#include "structmember.h"
+
+#include "../librbus/rbus.h"
+
+
+typedef struct {
+    PyObject_HEAD
+    PyObject *address;
+    struct rbus_root *native;
+    int number;
+} RbusRoot;
+
+static void
+RbusRoot_dealloc(RbusRoot* self)
+{
+    Py_XDECREF(self->address);
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject *
+RbusRoot_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    RbusRoot *self;
+
+    self = (RbusRoot *)type->tp_alloc(type, 0);
+    if (self == NULL)
+        goto out;
+
+    self->address = PyString_FromString("");
+    if(self->address == NULL)
+        goto dec;
+
+out:
+    return (PyObject *)self;
+
+dec:
+    Py_DECREF(self);
+    goto out;
+}
+
+static int
+RbusRoot_init(RbusRoot *self, PyObject *args, PyObject *kwds)
+{
+    PyObject *address=NULL, *tmp;
+
+    static char *kwlist[] = {"address", NULL};
+    char *str_adrress;
+
+    if (! PyArg_ParseTupleAndKeywords(args, kwds, "|S", kwlist, 
+                                      &address))
+        return -1; 
+
+    if(!address) {
+        PyErr_SetString(PyExc_ValueError, "require address");
+        return -1;
+    }
+
+    tmp = self->address;
+    Py_INCREF(address);
+    self->address = address;
+    Py_DECREF(tmp);
+
+    /*
+     * FIXME: check if here is proper dial string
+     * */
+    str_adrress = PyString_AsString(address);
+
+    self->native = rbus_init(str_adrress);
+
+    return 0;
+}
+
+static PyMemberDef RbusRoot_members[] = {
+    {NULL}  /* Sentinel */
+};
+
+static PyObject *
+RbusRoot_getaddress(RbusRoot *self, void *closure)
+{
+    Py_INCREF(self->address);
+    return self->address;
+}
+
+static int
+RbusRoot_setaddress(RbusRoot *self, PyObject *value, void *closure)
+{
+    
+  PyErr_SetString(PyExc_ValueError, "immm");
+  return -1;
+
+}
+
+static PyGetSetDef RbusRoot_getseters[] = {
+    {"address", 
+     (getter)RbusRoot_getaddress, (setter)RbusRoot_setaddress,
+     "first name",
+     NULL},
+    {NULL}  /* Sentinel */
+};
+
+static PyObject *
+RbusRoot_run(RbusRoot* self) {
+    ixp_serverloop(self->native->srv);
+
+    Py_RETURN_NONE;
+};
+
+static PyMethodDef RbusRoot_methods[] = {
+    {"run", (PyCFunction)RbusRoot_run, METH_NOARGS,
+        "Loop handling 9P proto"},
+    {NULL}  /* Sentinel */
+};
+
+static PyTypeObject RbusRootType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "rbus.RbusRoot",             /*tp_name*/
+    sizeof(RbusRoot),             /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)RbusRoot_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    "RbusRoot objects",           /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    RbusRoot_methods,             /* tp_methods */
+    RbusRoot_members,             /* tp_members */
+    RbusRoot_getseters,           /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    (initproc)RbusRoot_init,      /* tp_init */
+    0,                         /* tp_alloc */
+    RbusRoot_new,                 /* tp_new */
+};
+
+static PyMethodDef module_methods[] = {
+    {NULL}  /* Sentinel */
+};
+
+#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
+#define PyMODINIT_FUNC void
+#endif
+PyMODINIT_FUNC
+initrbus(void) 
+{
+    PyObject* m;
+
+    if (PyType_Ready(&RbusRootType) < 0)
+        return;
+
+    m = Py_InitModule3("rbus", module_methods,
+                       "Example module that creates an extension type.");
+
+    if (m == NULL)
+      return;
+
+    Py_INCREF(&RbusRootType);
+    PyModule_AddObject(m, "RbusRoot", (PyObject *)&RbusRootType);
+}
