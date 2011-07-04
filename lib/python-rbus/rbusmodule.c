@@ -171,6 +171,7 @@ RbusRoot_run(RbusRoot* self) {
 
 
 reset:
+    FD_ZERO(&qfds);
 
     for(c = rbus->srv->conn; c; c = c->next) {
         if(c->read) {
@@ -209,6 +210,58 @@ RbusRoot_put_event(RbusRoot* self, PyObject *event) {
 
 }
 
+static char * read_py_prop(struct rbus_t *rbus, char* name) {
+    PyObject *native = rbus->native;
+    PyObject *prop = PyObject_GetAttrString(native, name);
+
+    return PyString_AsString(prop);
+}
+
+static void child_set_props(struct rbus_t* priv,
+        PyObject *pychild) {
+
+    Py_ssize_t i, size;
+    PyObject *dir;
+    PyObject *pyname;
+    const char *name;
+    struct rbus_prop *prop_head=NULL, *prop_el;
+
+    PyObject *prop;
+    PyObject *cls = PyObject_GetAttrString(pychild, "__class__");
+
+    dir = PyObject_Dir(cls);
+    size = PyList_Size(dir);
+
+    int found = 0;
+    for(i=0; i<size; i++) {
+        pyname = PyList_GetItem(dir, i);
+        if(!pyname)
+            continue;
+
+        name = PyString_AsString(pyname);
+        if(*name == '_')
+            continue;
+
+        prop = PyObject_GetAttr(cls, pyname);
+
+        if(!PyObject_HasAttrString(prop, "RBUS_PROP"))
+            continue;
+
+        prop_head = realloc(prop_head, (found+2)*sizeof(struct rbus_prop));
+
+        prop_el = prop_head + found;
+        bzero(prop_el, sizeof(struct rbus_prop)*2);
+
+        strcpy(prop_el->name, name);
+        prop_el->read = &read_py_prop;
+
+        found++;
+
+    }
+
+    priv->props = prop_head;
+
+}
 static PyObject *
 RbusRoot_append_child(RbusRoot* self, PyObject *pychild) {
     PyObject *type = PyObject_GenericGetAttr(pychild, PyString_FromString("RBUS_TYPE"));
@@ -256,9 +309,12 @@ found:
     child->rbus = priv;
     child->rbus->native = pychild;
 
-    goto out;
+    child_set_props(priv, pychild);
 
+
+    goto out;
 }
+
 
 static PyMethodDef RbusRoot_methods[] = {
     {"run", (PyCFunction)RbusRoot_run, METH_NOARGS,
