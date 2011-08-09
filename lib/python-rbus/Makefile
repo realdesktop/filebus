@@ -1,2 +1,7 @@
+PY=$(shell which python2 || echo python)
+
 all:
-	python setup.py build
+	$(PY) setup.py build
+
+clean:
+	$(PY) setup.py clean
