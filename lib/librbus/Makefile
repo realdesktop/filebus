@@ -4,9 +4,11 @@ include $(ROOT)/mk/rbus.mk
 
 TARG =	librbus
 
+LIBS = -L$(ROOT)/lib/libixp.a
+
 OBJ =	fs   \
-	libixp_request \
 	rbus_common \
+	$(ROOT)/lib/libixp/*
 
 include $(ROOT)/mk/lib.mk
 

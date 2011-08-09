@@ -1,6 +1,7 @@
 # Customize below to fit your system
 
 COMPONENTS = \
+	libixp \
 	librbus \
 
 # Paths
@@ -13,7 +14,7 @@ PREFIX = /usr/local
 
 # Includes and libs
 INCLUDES = -I. -I$(ROOT)/include -I$(INCLUDE) -I/usr/include
-LIBS = -L/usr/lib -lc -lixp
+LIBS = -L/usr/lib -lc
 
 # Flags
 include $(ROOT)/mk/gcc.mk
