@@ -2,11 +2,11 @@
 
 pkgname="librbus-git"
 pkgver=0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="The lastest Realdesktop Bus library"
 url="http://rbus.enodev.org"
 license="BSD"
-arch=("i686" "x86_64" "arm", "arm7h")
+arch=("i686" "x86_64" "arm" "arm7h")
 makedepends=("git")
 provides=("librbus")
 source=()
