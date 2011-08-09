@@ -3,6 +3,7 @@
 COMPONENTS = \
 	libixp \
 	librbus \
+	python-rbus \
 
 # Paths
 PREFIX = /usr/local
