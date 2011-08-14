@@ -18,6 +18,8 @@ RbusRoot_dealloc(RbusRoot* self)
     self->ob_type->tp_free((PyObject*)self);
 }
 
+static void child_set_props(struct rbus_t* priv, PyObject *pychild);
+
 static PyObject *
 RbusRoot_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -67,6 +69,9 @@ RbusRoot_init(RbusRoot *self, PyObject *args, PyObject *kwds)
     str_adrress = PyString_AsString(address);
 
     self->native = rbus_init(str_adrress);
+    self->native->rbus.native = self;
+
+    child_set_props(&self->native->rbus, self);
 
     return 0;
 }
