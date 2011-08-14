@@ -96,8 +96,6 @@ RbusRoot_getchildren(RbusRoot *self, void *closure) {
     struct rbus_child *child = self->native->rbus.childs;
 
     while (child) {
-        printf("children: %s %x, next %x\n", child->name,
-                child->rbus, child->next);
         child = child->next;
     }
 
@@ -198,13 +196,38 @@ out:
 };
 
 static PyObject *
-RbusRoot_put_event(RbusRoot* self, PyObject *event) {
+RbusRoot_put_event(RbusRoot* self, PyObject *args) {
+    struct rbus_t *rbus = NULL;
+    struct rbus_t *root = &self->native->rbus;
+
+    struct rbus_child *child;
     char * str_event;
-    struct rbus_root *rbus = self->native;
 
-    str_event = PyString_AsString(event);
+    PyObject *native;
 
-    rbus_event(&rbus->rbus.events, "%s\n", str_event);
+    PyArg_ParseTuple(args, "s|O", &str_event, &native);
+
+    if(!native)
+	    goto skip;
+
+    for(child = root->childs; child; child = child->next) {
+	if(!child->rbus)
+		continue;
+
+	if(native == child->rbus->native) {
+		rbus = child->rbus;
+		goto put;
+	}
+    }
+
+out:
+    Py_RETURN_NONE; // FAIL!
+
+skip:
+    rbus = root;
+    
+put:
+    rbus_event(&rbus->events, "%s\n", str_event);
 
     Py_RETURN_NONE;
 
@@ -319,7 +342,7 @@ found:
 static PyMethodDef RbusRoot_methods[] = {
     {"run", (PyCFunction)RbusRoot_run, METH_NOARGS,
         "Loop handling 9P proto"},
-    {"put_event", (PyCFunction)RbusRoot_put_event, METH_O,
+    {"put_event", (PyCFunction)RbusRoot_put_event, METH_VARARGS,
         "Put event in root event bus"},
     {"append_child", (PyCFunction)RbusRoot_append_child, METH_O,
         "Add child object"},
