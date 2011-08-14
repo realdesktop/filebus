@@ -31,10 +31,12 @@ struct rbus_child {
 
 
 typedef char* (*rbus_prop_read)(struct rbus_t*, char*);
+typedef void (*rbus_prop_write)(struct rbus_t*, char*, char*);
 
 struct rbus_prop {
         char name[32];
         rbus_prop_read read;
+        rbus_prop_write write;
 };
 
 

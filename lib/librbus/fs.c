@@ -106,7 +106,14 @@ lookup_file(IxpFileId *parent, char *name)
                             file->p.rbus = parent->p.rbus;
 
                             file->index = (int)prop;
-                            file->tab.perm = 0400;
+                            file->tab.perm = 0;
+			    
+			    if(prop->write)
+				    file->tab.perm |= 0200;
+
+			    if(prop->read)
+				    file->tab.perm |= 0400;
+
                             file->tab.qtype = P9_QTFILE;
                             file->tab.type = FsProp;
 
@@ -308,6 +315,23 @@ fs_read(Ixp9Req *r)
 void
 fs_write(Ixp9Req *r)
 {
+	IxpFileId *f = r->fid->aux;
+
+	if(!ixp_srv_verifyfile(f, lookup_file)) {
+		ixp_respond(r, "enofile");
+		return;
+	}
+
+	struct rbus_prop *prop = f->p.rbus->props;
+        for(; prop && prop->name[0]; prop++) {
+
+	        if(strcmp(prop->name, f->tab.name))
+                            continue;
+
+		prop->write(f->p.rbus, prop->name, r->ifcall.twrite.data);
+		break;
+	}
+
     	ixp_respond(r, NULL);
 }
 
