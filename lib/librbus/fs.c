@@ -229,7 +229,19 @@ fs_open(Ixp9Req *r)
 void
 fs_clunk(Ixp9Req *r)
 {
-	ixp_respond(r, NULL);
+	IxpFileId *f;
+
+	f = r->fid->aux;
+	if(!ixp_srv_verifyfile(f, lookup_file)) {
+		ixp_respond(r, NULL);
+		return;
+	}
+
+	if(f->pending) {
+		/* Should probably be in freefid */
+		ixp_pending_clunk(r);
+		return;
+	}
 }
 
 
