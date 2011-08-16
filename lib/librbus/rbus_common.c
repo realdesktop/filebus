@@ -1,4 +1,6 @@
 #include <unistd.h>
+#include <stdlib.h>
+#include <strings.h>
 
 #include "rbus.h"
 #include "rbus_local.h"

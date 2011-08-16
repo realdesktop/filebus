@@ -23,8 +23,8 @@ FILTER = cat
 EXCFLAGS = $(INCLUDES) -D_XOPEN_SOURCE=600
 
 COMPILE_FLAGS = $(EXCFLAGS) $(CFLAGS) $$(pkg-config --cflags $(PACKAGES))
-COMPILE    = $(SHELL) $(ROOT)/util/compile "$(CC)" "$(COMPILE_FLAGS)"
-COMPILEPIC = $(SHELL) $(ROOT)/util/compile "$(CC)" "$(COMPILE_FLAGS) $(SOCFLAGS)"
+COMPILE    = $(SHELL) $(ROOT)/util/compile "$(CC)" "$(COMPILE_FLAGS) -c"
+COMPILEPIC = $(SHELL) $(ROOT)/util/compile "$(CC)" "$(COMPILE_FLAGS) $(SOCFLAGS) -c"
 
 LINK   = $(SHELL) $(ROOT)/util/link "$(LD)" "$$(pkg-config --libs $(PACKAGES)) $(LDFLAGS) $(LIBS)"
 LINKSO = $(SHELL) $(ROOT)/util/link "$(LD)" "$$(pkg-config --libs $(PACKAGES)) $(SOLDFLAGS) $(LIBS) $(SHARED)"

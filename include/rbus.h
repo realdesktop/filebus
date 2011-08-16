@@ -6,22 +6,15 @@ struct rbus_t;
 
 #include <ixp.h>
 
-typedef union IxpFileIdU IxpFileIdU;
-typedef struct IxpPending	IxpPending;
-typedef short bool;
-
 union IxpFileIdU {
-	void*		ref;
+        void*		ref;
         struct rbus_t* rbus;
 };
 
-
+typedef union IxpFileIdU IxpFileIdU;
+typedef short bool;
 
 #include <ixp_srvutil.h>
-
-
-typedef struct IxpServer IxpServer;
-
 
 struct rbus_child {
         char name[32];
