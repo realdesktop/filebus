@@ -71,7 +71,7 @@ RbusRoot_init(RbusRoot *self, PyObject *args, PyObject *kwds)
     self->native = rbus_init(str_adrress);
     self->native->rbus.native = self;
 
-    child_set_props(&self->native->rbus, self);
+    child_set_props(&self->native->rbus, (PyObject *) self);
 
     return 0;
 }

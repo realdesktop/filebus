@@ -5,5 +5,8 @@ setup(name="rbus", version="0.1",
          Extension("rbus", 
              sources=["rbusmodule.c"],
              libraries = ["rbus"],
+             include_dirs=["../../include"],
+             library_dirs=["../../lib"]
+
          ),
          ])
