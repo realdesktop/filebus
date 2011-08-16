@@ -1,3 +1,7 @@
+ROOT= ../..
+include $(ROOT)/mk/hdr.mk
+
+
 PY=$(shell which python2 || echo python)
 
 all:
@@ -5,3 +9,6 @@ all:
 
 clean:
 	$(PY) setup.py clean
+
+install:
+	$(PY) setup.py install --prefix $(PREFIX)
