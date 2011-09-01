@@ -242,6 +242,8 @@ fs_clunk(Ixp9Req *r)
 		ixp_pending_clunk(r);
 		return;
 	}
+
+	ixp_respond(r, NULL);
 }
 
 
